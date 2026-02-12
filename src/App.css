@@ -1,13 +1,13 @@
-
-* {
+﻿* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
 }
@@ -16,75 +16,95 @@ html, body, #root {
   width: 100%;
   min-height: 100vh;
   display: flex;
-  justify-content: center; 
-  align-items: center;     
-  padding: 20px;
-  transition: background 1s ease; /* Transição suave de cor */
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  transition: background 1s ease;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 2.5rem;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  text-align: center;
   width: 100%;
-  max-width: 450px; 
+  max-width: 980px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(244, 252, 255, 0.84));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.16);
 }
 
 h1 {
-  color: #333;
-  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #133045;
+  margin-bottom: 1.25rem;
 }
 
 .search-box {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 10px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 input {
-  flex: 1;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #bfd6e6;
   font-size: 1rem;
   outline: none;
-  
-
-  background-color: #ffffff; 
-  color: #333333; 
+  background-color: #fff;
+  color: #1f2e3a;
 }
 
 button {
   padding: 12px 20px;
   border-radius: 10px;
   border: none;
-  background-color: #333;
-  color: white;
-  font-weight: bold;
+  background: linear-gradient(145deg, #104163, #0f5f80);
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 button:hover {
-  transform: scale(1.05);
-  background-color: #000;
+  transform: translateY(-1px);
+  filter: brightness(1.06);
 }
 
-
 .weather-info h2 {
-  font-size: 1.2rem;
-  color: #555;
+  color: #173a52;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.82), rgba(239, 248, 252, 0.74));
+  border: 1px solid rgba(18, 74, 104, 0.12);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.info-card h3 {
+  color: #124865;
+  margin-bottom: 10px;
+  font-size: 1.02rem;
+}
+
+.current-card {
+  text-align: center;
 }
 
 .temp-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 
 .temp-container img {
@@ -93,52 +113,88 @@ button:hover {
 }
 
 .temp {
-  font-size: 4rem;
-  font-weight: 700;
-  color: #222;
+  color: #0f3d5a;
+  font-size: 3rem;
+  font-weight: 800;
 }
 
 .condition {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
+  color: #2d4657;
+  margin-bottom: 10px;
   text-transform: capitalize;
-  color: #444;
 }
 
-.uv-badge {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: rgba(0,0,0,0.05);
-  border-radius: 15px;
-  color: #333;
+.data-source {
+  color: #4a6475;
+  font-size: 0.83rem;
+  margin-bottom: 10px;
 }
 
-.uv-label {
-  display: block;
-  margin-top: 5px;
-  font-size: 0.9rem;
-  font-weight: bold;
+.metric-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.metric-grid.two-cols {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.metric-grid.one-col {
+  grid-template-columns: 1fr;
+}
+
+.metric-box {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 63, 87, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  color: #2d607c;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.4px;
 }
 
+.metric-box strong {
+  color: #102f44;
+  font-size: 1.05rem;
+}
 
-@media (max-width: 600px) {
+.metric-box small {
+  color: #35576d;
+}
+
+.metric-grid.compact {
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
   .card {
-    padding: 1.5rem;
-    max-width: 100%;
-  }
-
-  .temp {
-    font-size: 3rem;
+    padding: 1.25rem;
   }
 
   .search-box {
-    flex-direction: column; 
+    grid-template-columns: 1fr;
   }
 
   button {
     width: 100%;
-    padding: 15px;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid.two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .temp {
+    font-size: 2.6rem;
   }
 }
