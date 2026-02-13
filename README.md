@@ -16,7 +16,7 @@ Aplicação web desenvolvida com React e Vite para consulta de clima atual e dad
 - Vite  
 - JavaScript  
 - CSS
-- 
+
 ## APIs
 
 - Weather API  
