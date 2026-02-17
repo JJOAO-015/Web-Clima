@@ -157,7 +157,7 @@ function App() {
                   </div>
                 </div>
               </section>
-
+            {marine?.waveHeight != null && (
               <section className="info-card marine-card">
                 <h3>Previsão Marítima</h3>
                 <p className="data-source">Fonte: Open-Meteo Marine ({marineUpdatedLabel})</p>
@@ -192,6 +192,7 @@ function App() {
                   </div>
                 </div>
               </section>
+            )}
             </div>
           </div>
         )}
