@@ -50,7 +50,7 @@ function App() {
     setLoading(true);
 
     try {
-      const apiKey = 'd78d074db4904ce1aa2203348260802';
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
       const response = await fetch(
         `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&lang=pt`
       );
