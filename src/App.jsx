@@ -87,7 +87,13 @@ function App() {
       const data = await response.json();
 
       if (data.error) {
-        alert('Cidade não encontrada!');
+        if (data.error.code === 2006) {
+          alert('API key inválida ou não configurada corretamente.');
+        } else if (data.error.code === 1006) {
+          alert('Cidade não encontrada!');
+        } else {
+          alert('Erro ao buscar dados do clima.');
+        }
         setWeather(null);
         setMarine(null);
       } else {
