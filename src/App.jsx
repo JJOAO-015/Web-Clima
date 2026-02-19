@@ -183,6 +183,8 @@ function App() {
     >
       <div className="dashboard">
         
+        <h1 className="app-title">Previsão do Tempo</h1>
+        
         <div className="header-search">
           <input
             type="text"
