@@ -1,4 +1,15 @@
 ﻿import { useState } from 'react';
+
+import { 
+  Search, 
+  ArrowLeft, 
+  Wind, 
+  SunMedium, 
+  CloudRain, 
+  Waves, 
+  ThermometerSun, 
+  Loader2 
+} from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -6,14 +17,11 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [marine, setMarine] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  
   const [selectedDay, setSelectedDay] = useState(null);
 
   
   const fetchMarineData = async (lat, lon) => {
     try {
-      
       const response = await fetch(
         `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_direction,wave_period,sea_surface_temperature&timezone=auto`
       );
@@ -25,16 +33,12 @@ function App() {
         return;
       }
 
-    
       const now = Date.now();
       let bestIndex = 0;
       let bestDiff = Infinity;
-      
-      
       const dailyMap = {};
 
       timeList.forEach((t, index) => {
-        
         const timeMs = new Date(t).getTime();
         const diff = Math.abs(timeMs - now);
         if (diff < bestDiff) {
@@ -43,7 +47,7 @@ function App() {
         }
 
         if (t.includes('T12:00')) {
-            const dateKey = t.split('T')[0]; 
+            const dateKey = t.split('T')[0];
             dailyMap[dateKey] = {
                 waveHeight: data?.hourly?.wave_height?.[index],
                 waveDirection: data?.hourly?.wave_direction?.[index],
@@ -54,7 +58,6 @@ function App() {
       });
 
       setMarine({
-        
         current: {
             updatedAt: timeList[bestIndex],
             waveHeight: data?.hourly?.wave_height?.[bestIndex],
@@ -62,7 +65,6 @@ function App() {
             wavePeriod: data?.hourly?.wave_period?.[bestIndex],
             seaSurfaceTemperature: data?.hourly?.sea_surface_temperature?.[bestIndex],
         },
-       
         daily: dailyMap
       });
 
@@ -72,7 +74,6 @@ function App() {
     }
   };
 
-
   const fetchWeather = async () => {
     if (!city) return;
     setLoading(true);
@@ -81,12 +82,12 @@ function App() {
     try {
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
       const response = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=3&lang=pt`
+        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=4&lang=pt`
       );
       const data = await response.json();
 
       if (data.error) {
-        alert('Cidade nao encontrada!');
+        alert('Cidade não encontrada!');
         setWeather(null);
         setMarine(null);
       } else {
@@ -100,22 +101,21 @@ function App() {
     }
   };
 
-  
   const getBackgroundStyle = (uv) => {
-    if (!uv && uv !== 0) return 'linear-gradient(to bottom, #6dd5ed, #2193b0)';
-    if (uv <= 2) return 'linear-gradient(to bottom, #a8ff78, #78ffd6)';
-    if (uv <= 5) return 'linear-gradient(to bottom, #fffc00, #ffffff)';
-    if (uv <= 7) return 'linear-gradient(to bottom, #ff9966, #ff5e62)';
-    if (uv <= 10) return 'linear-gradient(to bottom, #cb2d3e, #ef473a)';
-    return 'linear-gradient(to bottom, #8e2de2, #4a00e0)';
+    if (!uv && uv !== 0) return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    if (uv <= 2) return 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+    if (uv <= 5) return 'linear-gradient(135deg, #f2994a 0%, #f2c94c 100%)';
+    if (uv <= 7) return 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)';
+    if (uv <= 10) return 'linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%)';
+    return 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)';
   };
 
   const getUVText = (uv) => {
-    if (uv <= 2) return 'Baixo 😀';
-    if (uv <= 5) return 'Moderado 🙂';
-    if (uv <= 7) return 'Alto 😐';
-    if (uv <= 10) return 'Muito alto 😟';
-    return 'Extremo 🥵';
+    if (uv <= 2) return 'Baixo';
+    if (uv <= 5) return 'Moderado';
+    if (uv <= 7) return 'Alto';
+    if (uv <= 10) return 'Muito Alto';
+    return 'Extremo';
   };
 
   const toCompass = (deg) => {
@@ -129,15 +129,12 @@ function App() {
     return date.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' });
   };
 
-
   let displayData = null;
 
   if (weather) {
     if (selectedDay) {
-       
-        const dateKey = selectedDay.date; 
+        const dateKey = selectedDay.date;
         const marineForDay = marine?.daily?.[dateKey];
-
         displayData = {
             isForecast: true,
             label: formatDay(selectedDay.date),
@@ -145,12 +142,10 @@ function App() {
             condition: selectedDay.day.condition.text,
             icon: selectedDay.day.condition.icon,
             wind: selectedDay.day.maxwind_kph,
-            windDir: '',
             uv: selectedDay.day.uv,
             min: selectedDay.day.mintemp_c,
             max: selectedDay.day.maxtemp_c,
             rain: selectedDay.day.daily_chance_of_rain,
-           
             marine: marineForDay ? {
                 height: marineForDay.waveHeight,
                 period: marineForDay.wavePeriod,
@@ -159,24 +154,21 @@ function App() {
             } : null
         };
     } else {
-      
         displayData = {
             isForecast: false,
-            label: 'Temperatura atual',
+            label: 'Hoje',
             temp: weather.current.temp_c,
             condition: weather.current.condition.text,
             icon: weather.current.condition.icon,
             wind: weather.current.wind_kph,
-            windDir: `(${weather.current.wind_dir})`,
             uv: weather.current.uv,
             feelsLike: weather.current.feelslike_c,
-           
+            min: null, max: null, rain: null,
             marine: marine?.current ? {
                 height: marine.current.waveHeight,
                 period: marine.current.wavePeriod,
                 direction: marine.current.waveDirection,
                 temp: marine.current.seaSurfaceTemperature,
-                updatedAt: marine.current.updatedAt 
             } : null
         };
     }
@@ -186,150 +178,132 @@ function App() {
     <div
       className="app-container"
       style={{
-        background: displayData ? getBackgroundStyle(displayData.uv) : 'linear-gradient(to bottom, #6dd5ed, #2193b0)',
-        transition: 'background 1s ease',
+        background: displayData ? getBackgroundStyle(displayData.uv) : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
       }}
     >
-      <div className="card">
-        <h1>Clima & UV</h1>
-
-        <div className="search-box">
+      <div className="dashboard">
+        
+        <div className="header-search">
           <input
             type="text"
-            placeholder="Digite a cidade (ex: Salvador)"
+            placeholder="Buscar cidade..."
             value={city}
             onChange={(e) => setCity(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
+            className="search-input glass-panel"
           />
-          <button onClick={fetchWeather} disabled={loading}>
-            {loading ? 'Buscando...' : 'Buscar'}
+         
+          <button onClick={fetchWeather} disabled={loading} className="search-btn glass-panel">
+            {loading ? <Loader2 className="spin-icon" size={20} /> : <Search size={20} />}
           </button>
         </div>
 
         {weather && displayData && (
-          <div className="weather-info">
+          <div className="dashboard-content">
             
-            <div className="location-header">
-                <h2>{weather.location.name}, {weather.location.region}</h2>
+            <div className="main-weather-section">
+              <div className="location-info">
+                <h2>{weather.location.name}</h2>
+                <p>{weather.location.region} • {displayData.label}</p>
                 {selectedDay && (
-                    <button className="back-btn" onClick={() => setSelectedDay(null)}>
-                        Voltar para Agora
+            
+                    <button className="back-btn glass-panel icon-flex" onClick={() => setSelectedDay(null)}>
+                        <ArrowLeft size={16} /> Voltar para o tempo real
                     </button>
                 )}
-            </div>
+              </div>
 
-            <div className="cards-grid">
+              <div className="big-temp-display">
+                <img src={displayData.icon} alt="Icone" className="huge-icon" />
+                <h1 className="huge-temp">{Math.round(displayData.temp)}°</h1>
+              </div>
+              <h3 className="condition-text">{displayData.condition}</h3>
               
-
-              <section className="info-card current-card">
-                <h3>{displayData.label}</h3>
-
-                <div className="temp-container">
-                  <img src={displayData.icon} alt="Icone do tempo" />
-                  <span className="temp">{Math.round(displayData.temp)}°C</span>
+              {displayData.isForecast && (
+                <div className="min-max-pill glass-panel">
+                    Máx: {Math.round(displayData.max)}° • Mín: {Math.round(displayData.min)}°
                 </div>
-
-                <p className="condition">{displayData.condition}</p>
-
-                {displayData.isForecast && (
-                   <div className="min-max-display">
-                      <span className="min">Min: {Math.round(displayData.min)}°</span> • 
-                      <span className="max"> Max: {Math.round(displayData.max)}°</span>
-                   </div>
-                )}
-
-                <div className="metric-grid two-cols">
-                  {!displayData.isForecast && (
-                    <div className="metric-box">
-                        <span className="metric-label">Sensacao</span>
-                        <strong>{Math.round(displayData.feelsLike)}°C</strong>
-                    </div>
-                  )}
-
-                  <div className="metric-box">
-                    <span className="metric-label">Indice UV</span>
-                    <strong>{displayData.uv}</strong>
-                    <small>{getUVText(displayData.uv)}</small>
-                  </div>
-
-                   {displayData.isForecast && (
-                    <div className="metric-box">
-                        <span className="metric-label">Chuva</span>
-                        <strong>{displayData.rain}%</strong>
-                    </div>
-                   )}
-                </div>
-
-                <div className="metric-grid one-col compact">
-                  <div className="metric-box">
-                    <span className="metric-label">Vento</span>
-                    <strong>
-                      {Math.round(displayData.wind)} KM/H {displayData.windDir}
-                    </strong>
-                  </div>
-                </div>
-              </section>
-
-             
-              {displayData.marine && displayData.marine.height != null && (
-                <section className="info-card marine-card">
-                  <h3>
-                     {displayData.isForecast ? 'Previsão Marítima' : 'Marítimo (Agora)'}
-                  </h3>
-                  
-                  
-                  {!displayData.isForecast && displayData.marine.updatedAt && (
-                      <p className="data-source">
-                          Atualizado: {new Date(displayData.marine.updatedAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
-                      </p>
-                  )}
-
-                  <div className="metric-grid two-cols">
-                    <div className="metric-box">
-                      <span className="metric-label">Altura da onda</span>
-                      <strong>{displayData.marine.height ?? '--'} m</strong>
-                    </div>
-                    <div className="metric-box">
-                      <span className="metric-label">Período</span>
-                      <strong>{displayData.marine.period ?? '--'} s</strong>
-                    </div>
-                    <div className="metric-box">
-                      <span className="metric-label">Direçao</span>
-                      <strong>
-                        {displayData.marine.direction ?? '--'}° {toCompass(displayData.marine.direction)}
-                      </strong>
-                    </div>
-                    <div className="metric-box">
-                      <span className="metric-label">Temp. Água</span>
-                      <strong>{displayData.marine.temp ?? '--'}°C</strong>
-                    </div>
-                  </div>
-                </section>
               )}
             </div>
 
-           
+            <div className="details-grid">
+              
+              {!displayData.isForecast && (
+                <div className="widget glass-panel">
+                  
+                  <span className="widget-title icon-flex"><ThermometerSun size={16} /> Sensação</span>
+                  <span className="widget-value">{Math.round(displayData.feelsLike)}°</span>
+                </div>
+              )}
+
+              <div className="widget glass-panel">
+                <span className="widget-title icon-flex"><Wind size={16} /> Vento</span>
+                <span className="widget-value">{Math.round(displayData.wind)} <small>km/h</small></span>
+              </div>
+
+              <div className="widget glass-panel highlight-uv">
+                <span className="widget-title icon-flex"><SunMedium size={16} /> Índice UV</span>
+                <span className="widget-value">{displayData.uv}</span>
+                <span className="widget-subtitle">{getUVText(displayData.uv)}</span>
+              </div>
+
+              {displayData.isForecast && (
+                <div className="widget glass-panel">
+                  <span className="widget-title icon-flex"><CloudRain size={16} /> Chuva</span>
+                  <span className="widget-value">{displayData.rain}%</span>
+                </div>
+              )}
+            </div>
+
+            {displayData.marine && displayData.marine.height != null && (
+              <div className="marine-panel glass-panel full-width">
+               
+                <h4 className="icon-flex">
+                  <Waves size={20} /> {displayData.isForecast ? 'Previsão Marítima' : 'Condições Marítimas'}
+                </h4>
+                <div className="marine-grid">
+                  <div className="marine-item">
+                    <span>Ondas</span>
+                    <strong>{displayData.marine.height ?? '--'} m</strong>
+                  </div>
+                  <div className="marine-item">
+                    <span>Período</span>
+                    <strong>{displayData.marine.period ?? '--'} s</strong>
+                  </div>
+                  <div className="marine-item">
+                    <span>Direção</span>
+                    <strong>{displayData.marine.direction ?? '--'}° {toCompass(displayData.marine.direction)}</strong>
+                  </div>
+                  <div className="marine-item">
+                    <span>Água</span>
+                    <strong>{displayData.marine.temp ?? '--'}°C</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {weather.forecast && (
-              <div className="forecast-section">
-                <h3>Próximos Dias</h3>
+              <div className="weekly-forecast full-width">
                 <div className="forecast-row">
-                  {weather.forecast.forecastday.map((day) => {
+                  {weather.forecast.forecastday.map((day, index) => {
+                    if (index === 0) return null;
                     const isSelected = selectedDay && selectedDay.date === day.date;
                     return (
                         <div 
                             key={day.date} 
-                            className={`day-card ${isSelected ? 'selected' : ''}`}
+                            className={`forecast-card glass-panel ${isSelected ? 'active' : ''}`}
                             onClick={() => setSelectedDay(day)}
                         >
                             <span className="day-name">{formatDay(day.date)}</span>
-                            <img src={day.day.condition.icon} alt="icone" className="day-icon" />
+                            <img src={day.day.condition.icon} alt="icone" />
                             <div className="day-temps">
                                 <span className="max">{Math.round(day.day.maxtemp_c)}°</span>
                                 <span className="min">{Math.round(day.day.mintemp_c)}°</span>
                             </div>
-                            <div className="mini-stats">
-                                <span className="rain-chance">☔ {day.day.daily_chance_of_rain}%</span>
-                                <span className="uv-mini">☀️ UV: {day.day.uv}</span>
+                            <div className="day-mini-data">
+                                
+                                <span className="icon-flex"><CloudRain size={14} /> {day.day.daily_chance_of_rain}%</span>
+                                <span className="icon-flex"><SunMedium size={14} /> {day.day.uv}</span>
                             </div>
                         </div>
                     );
