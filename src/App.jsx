@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 import { 
   Search, 
@@ -18,8 +18,16 @@ function App() {
   const [marine, setMarine] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-
+  const [favoriteCity, setFavoriteCity] = useState(
+    () => localStorage.getItem('favoriteCity') || ''
+  );
   
+  useEffect(() => {
+    if (favoriteCity) {
+      setCity(favoriteCity);
+    }
+  }, []);
+
   const fetchMarineData = async (lat, lon) => {
     try {
       const response = await fetch(
@@ -87,7 +95,7 @@ function App() {
       const data = await response.json();
 
       if (data.error) {
-        alert('Cidade não encontrada!');
+          alert('Cidade não encontrada!');
         setWeather(null);
         setMarine(null);
       } else {
@@ -98,6 +106,21 @@ function App() {
       console.error('Erro ao buscar dados:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFavorite = () => {
+    if (!weather?.location?.name) return;
+
+    const cityName = weather.location.name;
+
+    if (favoriteCity === cityName) {
+      localStorage.removeItem('favoriteCity');
+      setFavoriteCity('');
+    } 
+    else {
+      localStorage.setItem('favoriteCity', cityName);
+      setFavoriteCity(cityName);
     }
   };
 
@@ -205,7 +228,12 @@ function App() {
             
             <div className="main-weather-section">
               <div className="location-info">
-                <h2>{weather.location.name}</h2>
+                <div className="container-fav">
+                  <h2>{weather.location.name}</h2>
+                  <button className="favorite-btn" onClick={handleFavorite}>
+                    {favoriteCity === weather.location.name ? '★' : '☆'}
+                  </button>
+                </div>
                 <p>{weather.location.region} • {displayData.label}</p>
                 {selectedDay && (
             
