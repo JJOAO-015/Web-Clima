@@ -1,5 +1,4 @@
 ﻿import { useState, useEffect } from 'react';
-
 import { 
   Search, 
   ArrowLeft, 
@@ -8,7 +7,8 @@ import {
   CloudRain, 
   Waves, 
   ThermometerSun, 
-  Loader2 
+  Loader2,
+  MapPin
 } from 'lucide-react';
 import './App.css';
 
@@ -18,14 +18,41 @@ function App() {
   const [marine, setMarine] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
   const [favoriteCity, setFavoriteCity] = useState(
     () => localStorage.getItem('favoriteCity') || ''
   );
   
+  // --- FUNÇÃO DE GPS ---
+  const getUserLocation = () => {
+    if ("geolocation" in navigator) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          fetchWeather(`${lat},${lon}`);
+        },
+        (error) => {
+          console.error("Erro de localização:", error);
+          alert("Não foi possível acessar sua localização. Por favor, digite a cidade manualmente.");
+          setLoading(false);
+        }
+      );
+    } else {
+      alert("Seu navegador não suporta geolocalização.");
+    }
+  };
+
+  // --- EFEITO INICIAL ---
   useEffect(() => {
     if (favoriteCity) {
       setCity(favoriteCity);
+      fetchWeather(favoriteCity);
+    } else {
+      getUserLocation();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchMarineData = async (lat, lon) => {
@@ -82,15 +109,39 @@ function App() {
     }
   };
 
-  const fetchWeather = async () => {
-    if (!city) return;
+  const fetchSuggestions = async (query) => {
+    if (!query || query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${query}`
+      );
+      const data = await response.json();
+      
+      const uniqueSuggestions = data.filter((item, index, self) =>
+        index === self.findIndex(s => s.name === item.name && s.region === item.region && s.country === item.country)
+      ).slice(0, 5);
+      
+      setSuggestions(uniqueSuggestions);
+    } catch (error) {
+      console.error('Erro ao buscar sugestões:', error);
+      setSuggestions([]);
+    }
+  };
+
+  const fetchWeather = async (searchCity = city) => {
+    if (!searchCity) return;
     setLoading(true);
     setSelectedDay(null);
+    setSuggestions([]);
 
     try {
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
       const response = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=4&lang=pt`
+        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${searchCity}&days=4&lang=pt`
       );
       const data = await response.json();
 
@@ -106,6 +157,7 @@ function App() {
         setMarine(null);
       } else {
         setWeather(data);
+        setCity(data.location.name); // Atualiza o input com o nome real da cidade
         await fetchMarineData(data.location.lat, data.location.lon);
       }
     } catch (error) {
@@ -117,14 +169,12 @@ function App() {
 
   const handleFavorite = () => {
     if (!weather?.location?.name) return;
-
     const cityName = weather.location.name;
 
     if (favoriteCity === cityName) {
       localStorage.removeItem('favoriteCity');
       setFavoriteCity('');
-    } 
-    else {
+    } else {
       localStorage.setItem('favoriteCity', cityName);
       setFavoriteCity(cityName);
     }
@@ -211,38 +261,68 @@ function App() {
       }}
     >
       <div className="dashboard">
-        
         <h1 className="app-title">Previsão do Tempo</h1>
         
         <div className="header-search">
-          <input
-            type="text"
-            placeholder="Buscar cidade..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
-            className="search-input glass-panel"
-          />
+          <button 
+            onClick={getUserLocation} 
+            disabled={loading} 
+            className="search-btn glass-panel" 
+            title="Usar minha localização atual"
+          >
+            <MapPin size={20} />
+          </button>
+
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Buscar cidade..."
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value);
+                fetchSuggestions(e.target.value);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
+              className="search-input glass-panel"
+              style={{ width: '100%' }}
+            />
+            {suggestions.length > 0 && (
+              <div className="suggestions-dropdown glass-panel">
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="suggestion-item"
+                    onClick={() => {
+                      const selectedCity = `${suggestion.name}, ${suggestion.region}`;
+                      setCity(selectedCity);
+                      setSuggestions([]);
+                      fetchWeather(selectedCity);
+                    }}
+                  >
+                    {suggestion.name}, {suggestion.region}, {suggestion.country}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
          
-          <button onClick={fetchWeather} disabled={loading} className="search-btn glass-panel">
+          <button onClick={() => fetchWeather()} disabled={loading} className="search-btn glass-panel">
             {loading ? <Loader2 className="spin-icon" size={20} /> : <Search size={20} />}
           </button>
         </div>
 
         {weather && displayData && (
           <div className="dashboard-content">
-            
             <div className="main-weather-section">
               <div className="location-info">
                 <div className="container-fav">
                   <h2>{weather.location.name}</h2>
-                  <button className="favorite-btn" onClick={handleFavorite}>
+                  <button className="favorite-btn" onClick={handleFavorite} title="Favoritar cidade">
                     {favoriteCity === weather.location.name ? '★' : '☆'}
                   </button>
                 </div>
                 <p>{weather.location.region} • {displayData.label}</p>
                 {selectedDay && (
-            
                     <button className="back-btn glass-panel icon-flex" onClick={() => setSelectedDay(null)}>
                         <ArrowLeft size={16} /> Voltar para o tempo real
                     </button>
@@ -263,10 +343,8 @@ function App() {
             </div>
 
             <div className="details-grid">
-              
               {!displayData.isForecast && (
                 <div className="widget glass-panel">
-                  
                   <span className="widget-title icon-flex"><ThermometerSun size={16} /> Sensação</span>
                   <span className="widget-value">{Math.round(displayData.feelsLike)}°</span>
                 </div>
@@ -293,7 +371,6 @@ function App() {
 
             {displayData.marine && displayData.marine.height != null && (
               <div className="marine-panel glass-panel full-width">
-               
                 <h4 className="icon-flex">
                   <Waves size={20} /> {displayData.isForecast ? 'Previsão Marítima' : 'Condições Marítimas'}
                 </h4>
@@ -337,7 +414,6 @@ function App() {
                                 <span className="min">{Math.round(day.day.mintemp_c)}°</span>
                             </div>
                             <div className="day-mini-data">
-                                
                                 <span className="icon-flex"><CloudRain size={14} /> {day.day.daily_chance_of_rain}%</span>
                                 <span className="icon-flex"><SunMedium size={14} /> {day.day.uv}</span>
                             </div>
@@ -347,7 +423,6 @@ function App() {
                 </div>
               </div>
             )}
-
           </div>
         )}
       </div>
