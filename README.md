@@ -8,7 +8,8 @@ Aplicação web desenvolvida com React e Vite para consulta de clima atual e dad
 - Temperatura  
 - Sensação térmica  
 - Índice UV  
-- Dados marítimos  
+- Dados marítimos
+- Favoritar cidade
 
 ## Tecnologias
 
