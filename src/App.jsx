@@ -18,6 +18,7 @@ function App() {
   const [marine, setMarine] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
 
   
   const fetchMarineData = async (lat, lon) => {
@@ -74,15 +75,41 @@ function App() {
     }
   };
 
-  const fetchWeather = async () => {
-    if (!city) return;
+  const fetchSuggestions = async (query) => {
+    if (!query || query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      console.log('Fetching suggestions for:', query);
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${query}`
+      );
+      const data = await response.json();
+      console.log('Suggestions data:', data);
+      // Remove duplicates based on name, region, country
+      const uniqueSuggestions = data.filter((item, index, self) =>
+        index === self.findIndex(s => s.name === item.name && s.region === item.region && s.country === item.country)
+      ).slice(0, 5);
+      setSuggestions(uniqueSuggestions);
+      console.log('Unique suggestions:', uniqueSuggestions);
+    } catch (error) {
+      console.error('Erro ao buscar sugestões:', error);
+      setSuggestions([]);
+    }
+  };
+
+  const fetchWeather = async (searchCity = city) => {
+    if (!searchCity) return;
     setLoading(true);
     setSelectedDay(null);
+    setSuggestions([]);
 
     try {
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
       const response = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=4&lang=pt`
+        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${searchCity}&days=4&lang=pt`
       );
       const data = await response.json();
 
@@ -190,10 +217,31 @@ function App() {
             type="text"
             placeholder="Buscar cidade..."
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => {
+              setCity(e.target.value);
+              fetchSuggestions(e.target.value);
+            }}
             onKeyDown={(e) => e.key === 'Enter' && fetchWeather()}
             className="search-input glass-panel"
           />
+          {suggestions.length > 0 && (
+            <div className="suggestions-dropdown glass-panel">
+              {suggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="suggestion-item"
+                  onClick={() => {
+                    const selectedCity = `${suggestion.name}, ${suggestion.region}, ${suggestion.country}`;
+                    setCity(selectedCity);
+                    setSuggestions([]);
+                    fetchWeather(selectedCity);
+                  }}
+                >
+                  {suggestion.name}, {suggestion.region}, {suggestion.country}
+                </div>
+              ))}
+            </div>
+          )}
          
           <button onClick={fetchWeather} disabled={loading} className="search-btn glass-panel">
             {loading ? <Loader2 className="spin-icon" size={20} /> : <Search size={20} />}

@@ -9,6 +9,7 @@ Aplicação web desenvolvida com React e Vite para consulta de clima atual e dad
 - Sensação térmica  
 - Índice UV  
 - Dados marítimos  
+- Autocomplete funcional com sugestões únicas.
 
 ## Tecnologias
 
